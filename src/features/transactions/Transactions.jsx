@@ -1,17 +1,22 @@
 import { useState } from "react";
-
-import { transfer } from "./transactionsSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { deposit, transfer, withdrawal} from "./transactionsSlice";
 import "./transactions.scss";
 
 /**
  * Allows users to deposit to, withdraw from, and transfer money from their account.
  */
 export default function Transactions() {
+  
+  const dispatch = useDispatch();
+
   // TODO: Get the balance from the Redux store using the useSelector hook
-  const balance = 0;
+  const balance = useSelector((state) => state.transactions.balance);
+  const status = useSelector((state) => state.transactions.status);
 
   const [amountStr, setAmountStr] = useState("0.00");
   const [recipient, setRecipient] = useState("");
+  const [message, setMessage] = useState("");
 
   /** Dispatches a transaction action based on the form submission. */
   const onTransaction = (e) => {
@@ -23,12 +28,29 @@ export default function Transactions() {
 
     const amount = +amountStr;
 
-    // TODO: Dispatch the appropriate transaction action based on `action`
-    if (action === "transfer") {
-      // The `transfer` action is dispatched with a payload containing
-      // the amount and the recipient.
-      dispatch(transfer({ amount, recipient }));
-    }
+    if(amount > 0){
+
+      setMessage("");
+
+      // TODO: Dispatch the appropriate transaction action based on `action`
+      if (action === "deposit") {
+        // The `transfer` action is dispatched with a payload containing
+        // the amount and the recipient.
+        setRecipient("");
+        dispatch(deposit({ amount }));
+      }else if (action === "withdraw") {
+        // The `transfer` action is dispatched with a payload containing
+        // the amount and the recipient.
+        setRecipient("");
+        dispatch(withdrawal({ amount }));
+      }else if (action === "transfer") {
+        // The `transfer` action is dispatched with a payload containing
+        // the amount and the recipient.
+        if(recipient){
+          dispatch(transfer({ amount, recipient }));
+        }else setMessage("Please put Recipient Name");
+      }
+    }else setMessage("Please put number greater than 0");
   };
 
   return (
@@ -69,6 +91,12 @@ export default function Transactions() {
             />
           </label>
           <button name="transfer">Transfer</button>
+        </div>
+        <div>
+          {status && <div>{status}</div>}
+        </div>
+        <div>
+          {message && <div>{message}</div>}
         </div>
       </form>
     </section>
